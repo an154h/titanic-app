@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Titanic Survival Predictor</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Titanic Survival Predictor</h1>
+  <p>Enter passenger details below:</p>
+
+  <form id="predictForm">
+    <label>Passenger Class (1-3):</label>
+    <input type="number" id="pclass" required><br><br>
+
+    <label>Age:</label>
+    <input type="number" id="age" required><br><br>
+
+    <label>Sex (0 = Female, 1 = Male):</label>
+    <input type="number" id="sex" required><br><br>
+
+    <button type="submit">Predict</button>
+    <button type="button" id="autofillBtn">Autofill Random</button>
+  </form>
+
+  <h2 id="result"></h2>
+
+  <script>
+  // Handle form submission
+  document.getElementById("predictForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    let data = {
+      Pclass: parseInt(document.getElementById("pclass").value),
+      Age: parseInt(document.getElementById("age").value),
+      Sex: parseInt(document.getElementById("sex").value)
+    };
+
+    let response = await fetch("/predict", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+
+    let result = await response.json();
+    let resultElement = document.getElementById("result");
+
+    if (result.prediction && result.prediction.includes("Survived")) {
+      resultElement.innerHTML = "✅ Survived";
+      resultElement.style.color = "#27ae60"; // green
+    } else if (result.prediction) {
+      resultElement.innerHTML = "❌ Did Not Survive";
+      resultElement.style.color = "#e74c3c"; // red
+    } else {
+      resultElement.innerHTML = "⚠️ Error: " + result.error;
+      resultElement.style.color = "#f39c12"; // orange
+    }
+  });
+
+  // Handle Autofill button
+  document.getElementById("autofillBtn").addEventListener("click", function() {
+    // Random Pclass between 1 and 3
+    document.getElementById("pclass").value = Math.floor(Math.random() * 3) + 1;
+    // Random Age between 1 and 80
+    document.getElementById("age").value = Math.floor(Math.random() * 80) + 1;
+    // Random Sex: 0 (female) or 1 (male)
+    document.getElementById("sex").value = Math.random() < 0.5 ? 0 : 1;
+  });
+  </script>
+</body>
+</html>
